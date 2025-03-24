@@ -3,3 +3,4 @@ Flask-SocketIO
 ultralytics
 opencv-python
 treys
+eventlet
