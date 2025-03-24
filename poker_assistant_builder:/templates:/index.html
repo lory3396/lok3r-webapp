@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Poker Trainer - Screen Sharing in Tempo Reale</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Includi Socket.IO dal CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Poker Trainer - Screen Sharing in Tempo Reale</h1>
+    <button id="start">Avvia Condivisione Schermo</button>
+    
+    <!-- Elementi per la visualizzazione -->
+    <video id="screenVideo" autoplay style="display:none;"></video>
+    <canvas id="captureCanvas" width="640" height="480" style="display:none;"></canvas>
+    
+    <h2>Risultati in Tempo Reale</h2>
+    <img id="annotatedImage" src="" alt="Immagine Annotata">
+    <p><strong>Hole Cards (Tua Mano):</strong> <span id="playerHand"></span></p>
+    <p><strong>Board:</strong> <span id="boardCards"></span></p>
+    <p><strong>Probabilità di vittoria:</strong> <span id="winPercentage"></span>%</p>
+    <p><strong>Mossa suggerita:</strong> <span id="move"></span></p>
+  </div>
+  
+  <script>
+    var socket = io();
+    var video = document.getElementById('screenVideo');
+    var canvas = document.getElementById('captureCanvas');
+    var context = canvas.getContext('2d');
+
+    document.getElementById('start').onclick = function(){
+      // Richiede la condivisione dello schermo tramite WebRTC
+      navigator.mediaDevices.getDisplayMedia({ video: true })
+      .then(function(stream) {
+          video.srcObject = stream;
+          video.play();
+          // Invia un frame ogni 200 ms (5 fps)
+          setInterval(function(){
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            var dataURL = canvas.toDataURL('image/jpeg');
+            socket.emit('frame', dataURL);
+          }, 200);
+      })
+      .catch(function(err) {
+          console.error("Errore nella condivisione dello schermo: " + err);
+      });
+    };
+
+    socket.on('result', function(data) {
+      document.getElementById('annotatedImage').src = data.annotated;
+      document.getElementById('playerHand').innerText = data.player_hand.join(", ");
+      document.getElementById('boardCards').innerText = data.board_cards.join(", ");
+      document.getElementById('winPercentage').innerText = data.win_percentage;
+      document.getElementById('move').innerText = data.move;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+Flask
+Flask-SocketIO
+ultralytics
+opencv-python
+treys
