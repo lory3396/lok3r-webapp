@@ -6,7 +6,7 @@ from treys import Card, Evaluator, Deck
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode='eventlet')
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
